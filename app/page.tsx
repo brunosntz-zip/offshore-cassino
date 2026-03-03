@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import { supabase } from '../lib/supabase'; // Ajuste o caminho se a sua pasta lib estiver em outro lugar
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { 
   User, 
   Gamepad2, 
@@ -72,8 +74,29 @@ const GameCard = ({ title, description, icon: Icon, tag, tagType }: GameCardProp
 };
 
 export default function Home() {
-  // Esse estado depois a gente vai puxar do seu banco no Supabase!
-  const [balance] = useState(12450.00);
+  const [balance, setBalance] = useState<number>(0);
+
+  // Motor de busca do saldo no banco
+  useEffect(() => {
+    async function fetchWallet() {
+      const { data, error } = await supabase
+        .from('wallet')
+        .select('balance')
+        .eq('player_name', 'pepeco')
+        .single();
+
+      if (error) {
+        console.error("Erro na conexão com o cofre:", error.message);
+        return;
+      }
+
+      if (data) {
+        setBalance(data.balance);
+      }
+    }
+
+    fetchWallet();
+  }, []);
 
   const games: GameCardProps[] = [
     {
@@ -174,9 +197,13 @@ export default function Home() {
               Sua jornada para o domínio das mesas começa aqui.
             </p>
 
-            <button className="group relative px-10 py-4 bg-violet-600 text-white font-black text-sm uppercase tracking-[0.2em] rounded-2xl transition-all duration-300 hover:bg-violet-500 hover:shadow-[0_0_40px_rgba(139,92,246,0.4)] active:scale-95">
+            {/* Aqui tá o Link de roteamento! */}
+            <Link 
+              href="/ultimate-poker" 
+              className="group relative px-10 py-4 bg-violet-600 text-white font-black text-sm uppercase tracking-[0.2em] rounded-2xl transition-all duration-300 hover:bg-violet-500 hover:shadow-[0_0_40px_rgba(139,92,246,0.4)] active:scale-95 inline-block"
+            >
               Jogar Ultimate Poker
-            </button>
+            </Link>
           </div>
         </section>
 
@@ -233,4 +260,4 @@ export default function Home() {
       </footer>
     </div>
   );
-}
+} 
